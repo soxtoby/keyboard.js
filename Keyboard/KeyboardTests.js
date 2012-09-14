@@ -2,86 +2,123 @@
 ///<reference path="~/testing/sinon.js" />
 ///<reference path="~/testing/bqunit.js" />
 
-when("single char bound", function () {
-    var eventHandler = sinon.stub();
-    keyboard.on('a', eventHandler);
+describe("Keyboard.js", function () {
 
-    when("triggering matching char", function () {
-        keyboard.trigger('a');
+    when("'a' & 'b' bound", function () {
+        var a = sinon.spy(),
+        b = sinon.spy();
+        keyboard.on('a', a);
+        keyboard.on('b', b);
 
-        it("calls the bound event handler", function () {
-            sinon.assert.called(eventHandler);
-        });
-    });
-
-    when("handlers have been reset", function () {
-        keyboard.off();
-
-        when("triggering matching char", function () {
+        when("triggering 'a'", function () {
             keyboard.trigger('a');
 
-            it("doesn't call the previously bound event handler", function () {
-                sinon.assert.notCalled(eventHandler);
-            });
-        });
-    });
-
-    keyboard.off();
-});
-
-when("two char sequence bound", function () {
-    var ab = sinon.stub();
-    keyboard.on('a b', ab);
-
-    whenTriggeringCharsInSequence(function () {
-        it("calls event handler", function () {
-            sinon.assert.called(ab);
-        });
-    });
-
-    when("first char bound separately", function () {
-        var a = sinon.stub();
-        keyboard.on('a', a);
-
-        whenTriggeringCharsInSequence(function () {
-            it("calls single-char event handler then two-char event handler", function () {
+            it("calls 'a' handler", function () {
                 sinon.assert.called(a);
-                sinon.assert.called(ab);
-                sinon.assert.callOrder(a, ab);
+            });
+
+            it("doesn't call 'b' handler", function () {
+                sinon.assert.notCalled(b);
             });
         });
 
-        when("first char handler returns false", function () {
-            a.returns(false);
+        when("triggering 'b'", function () {
+            keyboard.trigger('b');
 
-            whenTriggeringCharsInSequence(function () {
-                it("doesn't call the two-char handler", function () {
-                    sinon.assert.notCalled(ab);
+            it("calls 'b' handler", function () {
+                sinon.assert.called(b);
+            });
+
+            it("doesn't call 'a' handler", function () {
+                sinon.assert.notCalled(a);
+            });
+        });
+
+        when("then all unbound", function () {
+            keyboard.off();
+
+            when("triggering 'a'", function () {
+                keyboard.trigger('a');
+
+                it("doesn't call 'a' handler", function () {
+                    sinon.assert.notCalled(a);
                 });
             });
         });
     });
 
-    when("second char bound separately", function () {
-        var b = sinon.stub();
-        keyboard.on('b', b);
+    when("'a b' bound", function () {
+        var ab = sinon.spy();
+        keyboard.on('a b', ab);
 
-        whenTriggeringCharsInSequence(function () {
-            it("doesn't call the second char handler", function () {
+        when("triggering 'a' then 'b'", function () {
+            keyboard.trigger('a');
+            keyboard.trigger('b');
+
+            it("calls 'a b' handler", function () {
                 sinon.assert.called(ab);
-                sinon.assert.notCalled(b);
+            });
+        });
+    });
+
+    when("'a b c' bound", function () {
+        var abc = sinon.spy();
+        keyboard.on('a b c', abc);
+
+        when("'a' bound", function () {
+            var a = sinon.spy();
+            keyboard.on('a', a);
+
+            when("triggering 'a', 'b', 'c'", function () {
+                keyboard.trigger('a b c');
+
+                it("calls 'a' handler then 'a b c' handler", function () {
+                    sinon.assert.called(abc);
+                    sinon.assert.callOrder(a, abc);
+                });
+            });
+        });
+
+        when("'b' bound", function () {
+            var b = sinon.spy();
+            keyboard.on('b', b);
+
+            when("triggering 'a', 'b', 'c'", function () {
+                keyboard.trigger('a b c');
+
+                it("calls 'a b c' handler only", function () {
+                    sinon.assert.called(abc);
+                    sinon.assert.notCalled(b);
+                });
+            });
+        });
+
+        when("'d' bound", function () {
+            var d = sinon.spy();
+            keyboard.on('d', d);
+
+            when("triggering 'a', 'b', 'd'", function () {
+                keyboard.trigger('a b d');
+
+                it("calls 'd' handler", function () {
+                    sinon.assert.called(d);
+                });
+            });
+        });
+
+        when("'b d' bound", function () {
+            var bd = sinon.spy();
+            keyboard.on('b d', bd);
+
+            when("triggering 'a', 'b', 'd'", function () {
+                keyboard.trigger('a b d');
+
+                it("calls 'b d' handler", function () {
+                    sinon.assert.called(bd);
+                });
             });
         });
     });
 
     keyboard.off();
-
-    function whenTriggeringCharsInSequence(whenFunction) {
-        when("triggering chars in sequence", function () {
-            keyboard.trigger('a');
-            keyboard.trigger('b');
-
-            whenFunction();
-        });
-    }
 });
