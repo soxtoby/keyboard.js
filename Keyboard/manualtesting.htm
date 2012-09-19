@@ -1,42 +1,58 @@
 ﻿<!DOCTYPE HTML>
 <html>
-    <head>
-        <title>Manual test</title>
-        <script src="Keyboard.js"></script>
-        <script src="testing/jquery.js"></script>
-        <script>
-            var testShortcuts = [
-                'a',
-                'shift+a',
-                'up',
-                'ctrl+shift+up'
-            ];
-            var testIndex = 0;
+<head>
+    <title>Manual test</title>
+    <script src="Keyboard.js"></script>
+    <script src="testing/jquery.js"></script>
+    <script>
+        var testShortcuts = [
+            'a',
+            'shift+a',
+            'up',
+            'ctrl+shift+up',
+            'up up down down left right left right b a return'
+        ];
+        var testIndex = -1;
 
-            keyboard.onTrigger = function (keys) {
-                $('#last-triggered').text(keys);
-            }
+        var regularTrigger = keyboard.trigger;
+        keyboard.trigger = function (keys) {
+            $('#last-triggered').text(keys);
+            return regularTrigger.apply(this, arguments);
+        }
 
-            $(nextTest)
-            
-            function nextTest() {
-                keyboard.off();
+        $(function () {
+            var testItemHtml = testShortcuts.map(function (shortcut, i) {
+                return '<li class="test" id="test-' + i + '">' + shortcut + '</li>';
+            }).join('');
+            $('#test-list').html(testItemHtml);
+            nextTest();
+        });
 
-                var shortcut = testShortcuts[testIndex++];
-                var testItem = $('<li>' + shortcut + '</li>')
-                    .appendTo('#test-list');
+        function nextTest() {
+            keyboard.off();
 
-                keyboard.on(shortcut, function () {
-                    testItem.css('color', 'green');
-                    nextTest();
-                });
-            }
-        </script>
-    </head>
-    <body>
-        <div id="last-triggered"></div>
-        <ul id="test-list">
-            
-        </ul>      
-    </body>
+            var shortcut = testShortcuts[++testIndex];
+
+            if (!shortcut)
+                return $('#test-list').append('<li>Done!</li>');
+
+            keyboard.on(shortcut, function () {
+                $('#test-' + testIndex).addClass('passed');
+                nextTest();
+            });
+        }
+    </script>
+    <style>
+        .passed {
+            color: lime;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        Last triggered: <span id="last-triggered"></span>
+    </div>
+    <ul id="test-list">
+    </ul>
+</body>
 </html>
