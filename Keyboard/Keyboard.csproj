@@ -43,6 +43,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="manualtesting.htm" />
     <Content Include="testing\bqunit.js" />
     <Content Include="testing\css\qunit.css" />
     <Content Include="testing\jquery.js" />

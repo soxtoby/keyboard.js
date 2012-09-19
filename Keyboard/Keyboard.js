@@ -65,6 +65,7 @@
 
             var node = this.bindings;
             keys.split(' ').forEach(function(key) {
+                key = key.split('+').sort().join('+');
                 node = node[key] || (node[key] = { });
             });
             node.handler = eventHandler;
@@ -76,6 +77,10 @@
         },
 
         trigger: function(keys) {
+            keys = keys.split('+').sort().join('+');
+
+            this.onTrigger(keys);
+            
             keys.split(' ').forEach(function(key) {
                 this.currentSequences = this.currentSequences
                     .concat(this.bindings)
@@ -85,6 +90,9 @@
                 if (this.currentSequences[0] && this.currentSequences[0].handler)
                     this.currentSequences[0].handler();
             }, this);
+        },
+        
+        onTrigger: function (keys) {
         }
     };
 

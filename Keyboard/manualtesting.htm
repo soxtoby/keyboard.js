@@ -1,0 +1,42 @@
+﻿<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Manual test</title>
+        <script src="Keyboard.js"></script>
+        <script src="testing/jquery.js"></script>
+        <script>
+            var testShortcuts = [
+                'a',
+                'shift+a',
+                'up',
+                'ctrl+shift+up'
+            ];
+            var testIndex = 0;
+
+            keyboard.onTrigger = function (keys) {
+                $('#last-triggered').text(keys);
+            }
+
+            $(nextTest)
+            
+            function nextTest() {
+                keyboard.off();
+
+                var shortcut = testShortcuts[testIndex++];
+                var testItem = $('<li>' + shortcut + '</li>')
+                    .appendTo('#test-list');
+
+                keyboard.on(shortcut, function () {
+                    testItem.css('color', 'green');
+                    nextTest();
+                });
+            }
+        </script>
+    </head>
+    <body>
+        <div id="last-triggered"></div>
+        <ul id="test-list">
+            
+        </ul>      
+    </body>
+</html>

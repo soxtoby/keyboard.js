@@ -176,6 +176,18 @@ describe("Keyboard.js", function () {
         });
     });
 
+    when("modifiers bound in wrong order", function () {
+        var aCtrl = bind('a+ctrl');
+
+        when("triggered in correct order", function () {
+            keyboard.trigger('ctrl+a');
+
+            it("calls the handler", function () {
+                sinon.assert.called(aCtrl);
+            });
+        });
+    });
+
     keyboard.off();
 
     function bind(keys) {
