@@ -121,7 +121,7 @@ describe("Keyboard.js", function () {
         var a = bind('a');
 
         when("'a' is pressed", function () {
-            keypress('a');
+            press('a');
 
             it("calls 'a' handler", function () {
                 sinon.assert.called(a);
@@ -129,7 +129,7 @@ describe("Keyboard.js", function () {
         });
 
         when("'ctrl+a' is pressed", function () {
-            keypress('a', { ctrl: true });
+            press('a', { ctrl: true });
 
             it("doesn't call 'a' handler", function () {
                 sinon.assert.notCalled(a);
@@ -141,7 +141,7 @@ describe("Keyboard.js", function () {
         var ctrlA = bind('ctrl+a');
 
         when("'ctrl+a' is pressed", function () {
-            keypress({ 'char': 'a', ctrl: true });
+            press('a', { ctrl: true });
 
             it("calls 'ctrl+a' handler", function () {
                 sinon.assert.called(ctrlA);
@@ -153,7 +153,7 @@ describe("Keyboard.js", function () {
         var ctrl = bind('ctrl');
 
         when("'ctrl' is pressed", function () {
-            dispatch('keydown', { ctrl: true, which: keyCode.ctrl });
+            press(keyCode.ctrl, { ctrl: true });
 
             it("calls 'ctrl' handler", function () {
                 sinon.assert.called(ctrl);
@@ -164,8 +164,8 @@ describe("Keyboard.js", function () {
             var ctrlA = bind('ctrl+a');
 
             when("'ctrl' then 'ctrl+a' is pressed", function () {
-                dispatch('keydown', { ctrl: true, which: keyCode.ctrl });
-                dispatch('keydown', { ctrl: true, 'char': 'a' });
+                press(keyCode.ctrl, { ctrl: true });
+                press('a', { ctrl: true });
 
                 it("calls 'ctrl' handler then 'ctrl+a' handler", function () {
                     sinon.assert.called(ctrl);
@@ -184,21 +184,12 @@ describe("Keyboard.js", function () {
         return handler;
     }
 
-    function keypress(character, opts) {
-        dispatch('keypress', buildOpts(character.charCodeAt(0), opts));
-    }
-
-    function keydown(character, opts) {
-        dispatch('keydown', buildOpts(character.toUpperCase().charCodeAt(0), opts));
-    }
-
-    function buildOpts(which, opts) {
-        if (typeof which == 'number') {
-            opts = opts || {};
-            opts.which = which;
-        } else {
-            opts = which;
-        }
+    function press(which, opts) {
+        if (typeof which == 'string')
+            which = which.toUpperCase().charCodeAt(0);
+        opts = opts || { };
+        opts.which = which;
+        dispatch('keydown', opts);
     }
 
     function dispatch(type, opts) {
