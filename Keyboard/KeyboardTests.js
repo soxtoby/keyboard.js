@@ -3,12 +3,15 @@
 ///<reference path="~/testing/bqunit.js" />
 
 describe("Keyboard.js", function () {
+    var keyCode = {
+        shift: 16,
+        ctrl: 17,
+        alt: 18
+    };
 
     when("'a' & 'b' bound", function () {
-        var a = sinon.spy(),
-        b = sinon.spy();
-        keyboard.on('a', a);
-        keyboard.on('b', b);
+        var a = bind('a'),
+            b = bind('b');
 
         when("triggering 'a'", function () {
             keyboard.trigger('a');
@@ -48,8 +51,7 @@ describe("Keyboard.js", function () {
     });
 
     when("'a b' bound", function () {
-        var ab = sinon.spy();
-        keyboard.on('a b', ab);
+        var ab = bind('a b');
 
         when("triggering 'a' then 'b'", function () {
             keyboard.trigger('a');
@@ -62,12 +64,10 @@ describe("Keyboard.js", function () {
     });
 
     when("'a b c' bound", function () {
-        var abc = sinon.spy();
-        keyboard.on('a b c', abc);
+        var abc = bind('a b c');
 
         when("'a' bound", function () {
-            var a = sinon.spy();
-            keyboard.on('a', a);
+            var a = bind('a');
 
             when("triggering 'a', 'b', 'c'", function () {
                 keyboard.trigger('a b c');
@@ -80,8 +80,7 @@ describe("Keyboard.js", function () {
         });
 
         when("'b' bound", function () {
-            var b = sinon.spy();
-            keyboard.on('b', b);
+            var b = bind('b');
 
             when("triggering 'a', 'b', 'c'", function () {
                 keyboard.trigger('a b c');
@@ -94,8 +93,7 @@ describe("Keyboard.js", function () {
         });
 
         when("'d' bound", function () {
-            var d = sinon.spy();
-            keyboard.on('d', d);
+            var d = bind('d');
 
             when("triggering 'a', 'b', 'd'", function () {
                 keyboard.trigger('a b d');
@@ -107,8 +105,7 @@ describe("Keyboard.js", function () {
         });
 
         when("'b d' bound", function () {
-            var bd = sinon.spy();
-            keyboard.on('b d', bd);
+            var bd = bind('b d');
 
             when("triggering 'a', 'b', 'd'", function () {
                 keyboard.trigger('a b d');
@@ -120,5 +117,102 @@ describe("Keyboard.js", function () {
         });
     });
 
+    when("'a' bound", function () {
+        var a = bind('a');
+
+        when("'a' is pressed", function () {
+            keypress('a');
+
+            it("calls 'a' handler", function () {
+                sinon.assert.called(a);
+            });
+        });
+
+        when("'ctrl+a' is pressed", function () {
+            keypress('a', { ctrl: true });
+
+            it("doesn't call 'a' handler", function () {
+                sinon.assert.notCalled(a);
+            });
+        });
+    });
+
+    when("'ctrl+a' bound", function () {
+        var ctrlA = bind('ctrl+a');
+
+        when("'ctrl+a' is pressed", function () {
+            keypress({ 'char': 'a', ctrl: true });
+
+            it("calls 'ctrl+a' handler", function () {
+                sinon.assert.called(ctrlA);
+            });
+        });
+    });
+
+    when("'ctrl' bound", function () {
+        var ctrl = bind('ctrl');
+
+        when("'ctrl' is pressed", function () {
+            dispatch('keydown', { ctrl: true, which: keyCode.ctrl });
+
+            it("calls 'ctrl' handler", function () {
+                sinon.assert.called(ctrl);
+            });
+        });
+
+        when("'ctrl+a' bound", function () {
+            var ctrlA = bind('ctrl+a');
+
+            when("'ctrl' then 'ctrl+a' is pressed", function () {
+                dispatch('keydown', { ctrl: true, which: keyCode.ctrl });
+                dispatch('keydown', { ctrl: true, 'char': 'a' });
+
+                it("calls 'ctrl' handler then 'ctrl+a' handler", function () {
+                    sinon.assert.called(ctrl);
+                    sinon.assert.called(ctrlA);
+                    sinon.assert.callOrder(ctrl, ctrlA);
+                });
+            });
+        });
+    });
+
     keyboard.off();
+
+    function bind(keys) {
+        var handler = sinon.spy();
+        keyboard.on(keys, handler);
+        return handler;
+    }
+
+    function keypress(character, opts) {
+        dispatch('keypress', buildOpts(character.charCodeAt(0), opts));
+    }
+
+    function keydown(character, opts) {
+        dispatch('keydown', buildOpts(character.toUpperCase().charCodeAt(0), opts));
+    }
+
+    function buildOpts(which, opts) {
+        if (typeof which == 'number') {
+            opts = opts || {};
+            opts.which = which;
+        } else {
+            opts = which;
+        }
+    }
+
+    function dispatch(type, opts) {
+        if (typeof opts == 'string')
+            opts = { 'char': opts };
+
+        var event = new CustomEvent(type, opts);
+
+        event.which = opts.char ? opts.char.charCodeAt(0) : opts.which || 0;
+        event.ctrlKey = opts.ctrl;
+        event.altKey = opts.alt;
+        event.shiftKey = opts.shift;
+        event.metaKey = opts.meta;
+
+        return document.dispatchEvent(event);
+    }
 });
