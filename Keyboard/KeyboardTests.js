@@ -1,6 +1,7 @@
 ﻿///<reference path="~/Keyboard.js"/>
 ///<reference path="~/testing/sinon.js" />
 ///<reference path="~/testing/bqunit.js" />
+///<reference path="~/testing/qunit.js" />
 
 describe("Keyboard.js", function () {
     var keyCode = {
@@ -121,15 +122,31 @@ describe("Keyboard.js", function () {
         var a = bind('a');
 
         when("'a' is pressed", function () {
-            press('a');
+            var event = press('a');
 
-            it("calls 'a' handler", function () {
-                sinon.assert.called(a);
+            it("calls 'a' handler with the event", function () {
+                sinon.assert.called(a, event);
+            });
+        });
+
+        when("'a' handler returns false", function () {
+            a.returns(false);
+
+            when("'a' is pressed", function () {
+                var event = press('a', { stopPropagation: sinon.spy() });
+
+                it("stops event propagation", function () {
+                    sinon.assert.called(event.stopPropagation);
+                });
+
+                it("prevents default action", function () {
+                    ok(!event.defaultPrevented);
+                });
             });
         });
 
         when("'ctrl+a' is pressed", function () {
-            press('a', { ctrl: true });
+            press('a', { ctrlKey: true });
 
             it("doesn't call 'a' handler", function () {
                 sinon.assert.notCalled(a);
@@ -141,7 +158,7 @@ describe("Keyboard.js", function () {
         var ctrlA = bind('ctrl+a');
 
         when("'ctrl+a' is pressed", function () {
-            press('a', { ctrl: true });
+            press('a', { ctrlKey: true });
 
             it("calls 'ctrl+a' handler", function () {
                 sinon.assert.called(ctrlA);
@@ -153,7 +170,7 @@ describe("Keyboard.js", function () {
         var ctrl = bind('ctrl');
 
         when("'ctrl' is pressed", function () {
-            press(keyCode.ctrl, { ctrl: true });
+            press(keyCode.ctrl, { ctrlKey: true });
 
             it("calls 'ctrl' handler", function () {
                 sinon.assert.called(ctrl);
@@ -164,8 +181,8 @@ describe("Keyboard.js", function () {
             var ctrlA = bind('ctrl+a');
 
             when("'ctrl' then 'ctrl+a' is pressed", function () {
-                press(keyCode.ctrl, { ctrl: true });
-                press('a', { ctrl: true });
+                press(keyCode.ctrl, { ctrlKey: true });
+                press('a', { ctrlKey: true });
 
                 it("calls 'ctrl' handler then 'ctrl+a' handler", function () {
                     sinon.assert.called(ctrl);
@@ -191,7 +208,7 @@ describe("Keyboard.js", function () {
     keyboard.off();
 
     function bind(keys) {
-        var handler = sinon.spy();
+        var handler = sinon.stub();
         keyboard.on(keys, handler);
         return handler;
     }
@@ -199,23 +216,20 @@ describe("Keyboard.js", function () {
     function press(which, opts) {
         if (typeof which == 'string')
             which = which.toUpperCase().charCodeAt(0);
-        opts = opts || { };
+        opts = opts || {};
         opts.which = which;
-        dispatch('keydown', opts);
+        return dispatch('keydown', opts);
     }
 
     function dispatch(type, opts) {
-        if (typeof opts == 'string')
-            opts = { 'char': opts };
+        var event = new CustomEvent(type);
 
-        var event = new CustomEvent(type, opts);
+        Object.keys(opts).forEach(function (key) {
+            event[key] = opts[key];
+        });
 
-        event.which = opts.char ? opts.char.charCodeAt(0) : opts.which || 0;
-        event.ctrlKey = opts.ctrl;
-        event.altKey = opts.alt;
-        event.shiftKey = opts.shift;
-        event.metaKey = opts.meta;
+        document.dispatchEvent(event);
 
-        return document.dispatchEvent(event);
+        return event;
     }
 });

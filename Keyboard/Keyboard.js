@@ -79,6 +79,7 @@
         trigger: function(keys) {
             keys = keys.split('+').sort().join('+');
 
+            var ret;
             keys.split(' ').forEach(function(key) {
                 this.currentSequences = this.currentSequences
                     .concat(this.bindings)
@@ -86,8 +87,9 @@
                     .map(function(sequence) { return sequence[key]; });
 
                 if (this.currentSequences[0] && this.currentSequences[0].handler)
-                    this.currentSequences[0].handler();
+                    ret = this.currentSequences[0].handler();
             }, this);
+            return ret;
         }
     };
 
@@ -106,7 +108,10 @@
             key = keys.concat(key).join('+');
         }
         
-        keyboard.trigger(key);
+        if (keyboard.trigger(key) === false) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
     }, false);
 
     keyboard.off();
