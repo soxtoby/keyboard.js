@@ -1,5 +1,6 @@
-﻿'use strict';
-(function(window) {
+﻿(function(global) {
+    'use strict';
+    
     var nonChars = {
         8: 'backspace',
         9: 'tab',
@@ -58,7 +59,7 @@
         224: 'meta'
     };
 
-    var keyboard = window.keyboard = {
+    var keyboard = global.keyboard = {
         on: function(keys, eventHandler) {
             if (!eventHandler)
                 throw new Error('eventHandler not specified');
@@ -76,7 +77,7 @@
             this.currentSequences = [];
         },
 
-        trigger: function(keys) {
+        trigger: function(keys, event) {
             keys = keys.split('+').sort().join('+');
 
             var ret;
@@ -87,13 +88,13 @@
                     .map(function(sequence) { return sequence[key]; });
 
                 if (this.currentSequences[0] && this.currentSequences[0].handler)
-                    ret = this.currentSequences[0].handler();
+                    ret = this.currentSequences[0].handler(event);
             }, this);
             return ret;
         }
     };
 
-    window.document.addEventListener('keydown', function(event) {
+    global.document.addEventListener('keydown', function(event) {
         var key = modifiers[event.which] 
             || nonChars[event.which]
             || String.fromCharCode(event.which).toLowerCase();
@@ -108,7 +109,7 @@
             key = keys.concat(key).join('+');
         }
         
-        if (keyboard.trigger(key) === false) {
+        if (keyboard.trigger(key, event) === false) {
             event.preventDefault();
             event.stopPropagation();
         }

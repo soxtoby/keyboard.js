@@ -1,14 +1,9 @@
-﻿///<reference path="~/Keyboard.js"/>
-///<reference path="~/testing/sinon.js" />
-///<reference path="~/testing/bqunit.js" />
-///<reference path="~/testing/qunit.js" />
+﻿describe("Keyboard.js", function () {
+    'use strict';
 
-describe("Keyboard.js", function () {
-    var keyCode = {
-        shift: 16,
-        ctrl: 17,
-        alt: 18
-    };
+    chai.should();
+
+    var ctrlKeyCode = 17;
 
     when("'a' & 'b' bound", function () {
         var a = bind('a'),
@@ -18,11 +13,11 @@ describe("Keyboard.js", function () {
             keyboard.trigger('a');
 
             it("calls 'a' handler", function () {
-                sinon.assert.called(a);
+                a.should.have.been.called;
             });
 
             it("doesn't call 'b' handler", function () {
-                sinon.assert.notCalled(b);
+                b.should.not.have.been.called;
             });
         });
 
@@ -30,11 +25,11 @@ describe("Keyboard.js", function () {
             keyboard.trigger('b');
 
             it("calls 'b' handler", function () {
-                sinon.assert.called(b);
+                b.should.have.been.called;
             });
 
             it("doesn't call 'a' handler", function () {
-                sinon.assert.notCalled(a);
+                a.should.not.have.been.called;
             });
         });
 
@@ -45,7 +40,7 @@ describe("Keyboard.js", function () {
                 keyboard.trigger('a');
 
                 it("doesn't call 'a' handler", function () {
-                    sinon.assert.notCalled(a);
+                    a.should.not.have.been.called;
                 });
             });
         });
@@ -59,7 +54,7 @@ describe("Keyboard.js", function () {
             keyboard.trigger('b');
 
             it("calls 'a b' handler", function () {
-                sinon.assert.called(ab);
+                ab.should.have.been.called;
             });
         });
     });
@@ -74,8 +69,8 @@ describe("Keyboard.js", function () {
                 keyboard.trigger('a b c');
 
                 it("calls 'a' handler then 'a b c' handler", function () {
-                    sinon.assert.called(abc);
-                    sinon.assert.callOrder(a, abc);
+                    a.should.have.been.calledBefore(abc);
+                    abc.should.have.been.called;
                 });
             });
         });
@@ -87,8 +82,8 @@ describe("Keyboard.js", function () {
                 keyboard.trigger('a b c');
 
                 it("calls 'a b c' handler only", function () {
-                    sinon.assert.called(abc);
-                    sinon.assert.notCalled(b);
+                    abc.should.have.been.called;
+                    b.should.not.have.been.called;
                 });
             });
         });
@@ -100,7 +95,7 @@ describe("Keyboard.js", function () {
                 keyboard.trigger('a b d');
 
                 it("calls 'd' handler", function () {
-                    sinon.assert.called(d);
+                    d.should.have.been.called;
                 });
             });
         });
@@ -112,7 +107,7 @@ describe("Keyboard.js", function () {
                 keyboard.trigger('a b d');
 
                 it("calls 'b d' handler", function () {
-                    sinon.assert.called(bd);
+                    bd.should.have.been.called;
                 });
             });
         });
@@ -125,7 +120,7 @@ describe("Keyboard.js", function () {
             var event = press('a');
 
             it("calls 'a' handler with the event", function () {
-                sinon.assert.called(a, event);
+                a.should.have.been.calledWith(event);
             });
         });
 
@@ -133,14 +128,14 @@ describe("Keyboard.js", function () {
             a.returns(false);
 
             when("'a' is pressed", function () {
-                var event = press('a', { stopPropagation: sinon.spy() });
+                var event = press('a', { stopPropagation: sinon.spy(), preventDefault: sinon.spy() });
 
                 it("stops event propagation", function () {
-                    sinon.assert.called(event.stopPropagation);
+                    event.stopPropagation.should.have.been.called;
                 });
 
                 it("prevents default action", function () {
-                    ok(!event.defaultPrevented);
+                    event.preventDefault.should.have.been.called;
                 });
             });
         });
@@ -149,7 +144,7 @@ describe("Keyboard.js", function () {
             press('a', { ctrlKey: true });
 
             it("doesn't call 'a' handler", function () {
-                sinon.assert.notCalled(a);
+                a.should.not.have.been.called;
             });
         });
     });
@@ -161,7 +156,7 @@ describe("Keyboard.js", function () {
             press('a', { ctrlKey: true });
 
             it("calls 'ctrl+a' handler", function () {
-                sinon.assert.called(ctrlA);
+                ctrlA.should.have.been.called;
             });
         });
     });
@@ -170,10 +165,10 @@ describe("Keyboard.js", function () {
         var ctrl = bind('ctrl');
 
         when("'ctrl' is pressed", function () {
-            press(keyCode.ctrl, { ctrlKey: true });
+            press(ctrlKeyCode, { ctrlKey: true });
 
             it("calls 'ctrl' handler", function () {
-                sinon.assert.called(ctrl);
+                ctrl.should.have.been.called;
             });
         });
 
@@ -181,13 +176,12 @@ describe("Keyboard.js", function () {
             var ctrlA = bind('ctrl+a');
 
             when("'ctrl' then 'ctrl+a' is pressed", function () {
-                press(keyCode.ctrl, { ctrlKey: true });
+                press(ctrlKeyCode, { ctrlKey: true });
                 press('a', { ctrlKey: true });
 
                 it("calls 'ctrl' handler then 'ctrl+a' handler", function () {
-                    sinon.assert.called(ctrl);
-                    sinon.assert.called(ctrlA);
-                    sinon.assert.callOrder(ctrl, ctrlA);
+                    ctrl.should.have.been.calledBefore(ctrlA);
+                    ctrlA.should.have.been.called;
                 });
             });
         });
@@ -200,7 +194,7 @@ describe("Keyboard.js", function () {
             keyboard.trigger('ctrl+a');
 
             it("calls the handler", function () {
-                sinon.assert.called(aCtrl);
+                aCtrl.should.have.been.called;
             });
         });
     });

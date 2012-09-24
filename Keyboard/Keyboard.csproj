@@ -33,24 +33,19 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="manualtesting.htm" />
-    <Content Include="testing\bqunit.js" />
-    <Content Include="testing\css\qunit.css" />
-    <Content Include="testing\jquery.js" />
+    <Content Include="testing\basil-browser-runner.css" />
+    <Content Include="testing\basil-browser-runner.js" />
+    <Content Include="testing\basil.js" />
+    <Content Include="testing\chai.js" />
     <Content Include="KeyboardTests.js" />
     <Content Include="Keyboard.js" />
-    <Content Include="testing\qunit.js" />
-    <Content Include="testing\sinon-qunit.js" />
+    <Content Include="testing\sinon-chai.js" />
     <Content Include="testing\sinon.js" />
     <Content Include="test.html" />
   </ItemGroup>
