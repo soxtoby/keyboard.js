@@ -1,57 +1,105 @@
-(function(global) {
+(function (global) {
     var oldDescribe = global.describe;
     global.describe = describe;
     var localStorage = global.localStorage || {};
+    var isSetup = false;
 
-    function describe (name, fn) {
+    function describe(name, fn) {
         if (!document.body) {
-            setTimeout(function() { describe(name, fn);}, 100);
+            setTimeout(function () { describe(name, fn); }, 100);
             return;
         }
 
+        if (!isSetup) {
+            isSetup = true;
+            setup();
+        }
+
+        var filter = param('filter');
+        if (filter && name.toLowerCase().indexOf(filter.toLowerCase()) == -1)
+            return;
+
         var context = oldDescribe(name, fn);
-
-        var destinationElement = getOrCreateDestinationElement();
-        appendHidePassed(destinationElement);
-
-        appendResultElements(destinationElement, [context]);
+        appendResults(document.getElementById('basil-results'), [context]);
+        if (!context.passed)
+            document.getElementById('basil-header').className = 'is-failed';
     }
 
-    function appendHidePassed(el) {
-        var checkbox = document.createElement('input');
-        checkbox.setAttribute('type', 'checkbox');
-        checkbox.setAttribute('id', 'basil-hide-passed-checkbox');
-
-        var label = document.createElement('label');
-        label.setAttribute('for', 'basil-hide-passed-checkbox');
-        label.innerHTML += "Hide Passed";
-
-        checkbox.addEventListener('change', function() {
-            if (checkbox.checked)
-                el.setAttribute('class', 'basil-hide-passed');
-            else
-                el.removeAttribute('class');
-        });
-
-        el.appendChild(checkbox);
-        el.appendChild(label);
+    function param(key) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+            var pair = vars[i].split('=');
+            if (decodeURIComponent(pair[0]) == key) {
+                return decodeURIComponent(pair[1]);
+            }
+        }
     }
 
-    function appendResultElements (el, contexts) {
+    var baseTemplate =
+        '<div id="basil-header">'
+            + '<div id="basil-title"></div>'
+            + '<form method="get" id="basil-settings">'
+                + '<label>Filter <input type="text" id="basil-filter" name="filter"></label>'
+                + '<label><input type="checkbox" id="basil-hide-passed" name="hide-passed">Hide Passed</label>'
+            + '</form>'
+        + '</div>'
+        + '<div id="basil-results"></div>';
+
+    function setup() {
+        createBaseStructure();
+        setTitle();
+        setupSettingsForm();
+        setupHidePassed();
+
+        function createBaseStructure() {
+            var body = document.body;
+            createDom(baseTemplate)
+                .forEach(body.appendChild.bind(body));
+        }
+
+        function setTitle() {
+            var pageTitle = document.getElementsByTagName('title');
+            var titleText = pageTitle.length ? pageTitle[0].innerText : 'Basil';
+            document.getElementById('basil-title').innerText = titleText;
+        }
+
+        function setupSettingsForm() {
+            document.getElementById('basil-settings').setAttribute('action', document.location.href);
+
+            var filter = document.getElementById('basil-filter');
+            filter.setAttribute('value', param('filter') || '');
+            filter.focus();
+        }
+
+        function setupHidePassed() {
+            var checkbox = document.getElementById('basil-hide-passed')
+            var results = document.getElementById('basil-results');
+
+            checkbox.addEventListener('change', function () {
+                if (checkbox.checked)
+                    results.setAttribute('class', 'is-hiding-passed');
+                else
+                    results.removeAttribute('class');
+            });
+        }
+    }
+
+    function appendResults(el, contexts) {
         if (!contexts.length)
             return;
 
         var ul = document.createElement('ul');
-        contexts.forEach(function(context, i) {
+        contexts.forEach(function (context, i) {
             var li = createLi(context);
-            appendResultElements(li, context.children);
+            appendResults(li, context.children);
             ul.appendChild(li);
         });
 
         el.appendChild(ul);
     }
 
-    function createLi (context) {
+    function createLi(context) {
         var cssClass = getCssClass(context);
         var caption = getCaption(context);
 
@@ -63,14 +111,16 @@
         if (context.children.length)
             addExpandCollapse(li, context);
 
-        if (context.failingFunction)
+        if (context.failingFunction) {
             addInspectionLink(li, context);
+            addViewCodeLink(li, context);
+        }
 
         return li;
     }
 
     function addExpandCollapse(li, context, cssClass) {
-        li.addEventListener('click', function(event) {
+        li.addEventListener('click', function (event) {
             if (event.target != li)
                 return;
 
@@ -92,49 +142,65 @@
 
     }
 
-    function addInspectionLink (li, context) {
+    function addInspectionLink(li, context) {
         var a = document.createElement('a');
         a.innerHTML = " inspect";
         a.setAttribute('class', 'basil-inspect');
         a.setAttribute('href', '#');
 
-        var inspect = context.failingFunction.bind(context);
+        var inspect = context.failingFunction.bind(context.failingScope);
         addInspectListener(a, inspect);
 
         li.appendChild(a);
     }
 
-    function addInspectListener (a, inspect) {
-        a.addEventListener('click', function(event) {
+    function addInspectListener(a, stepInHere) {
+        a.addEventListener('click', function (event) {
             event.preventDefault();
             debugger;
-            inspect();
+            stepInHere();
         });
     }
 
+    function addViewCodeLink (li, context) {
+        var checkbox = document.createElement('input');
+        checkbox.setAttribute('type', 'checkbox');
+        checkbox.setAttribute('class', 'toggle-fail-code');
+
+        var code = document.createElement('span');
+        code.innerHTML = context.failingFunction.toString().split("\n").slice(1, -1).join("\n");
+        code.setAttribute('class', 'fail-code');
+
+        li.appendChild(checkbox);
+        li.appendChild(code);
+    }
+
     function getCssClass (context) {
-        var cssClass = context.passed === true ? 'pass'
-            : context.passed === false ? 'fail'
-            : 'not-run';
-        if (context.children.length)
-            cssClass += ' has-children';
+        var cssClass = context.passed === true ? 'is-passed'
+            : context.passed === false ? 'is-failed'
+            : 'is-not-run';
+
+        cssClass += context.children.length ? ' basil-parent' : ' basil-leaf';
+
         if (isCollapsed(context))
-            cssClass += ' collapsed';
+            cssClass += ' is-collapsed';
         return cssClass;
     }
 
-    function getCaption (context) {
+    function getCaption(context) {
         var errorString = context.error ? ('(' + context.error.toString() + ')') : '';
         return context.name + " " + errorString;
     }
 
-    function getOrCreateDestinationElement () {
-        var destinationElement = document.getElementById("basil-test-output");
-        if (!destinationElement) {
-            destinationElement = document.createElement('div');
-            destinationElement.setAttribute('id', 'basil-test-output');
-            document.body.appendChild(destinationElement);
-        }
-        return destinationElement;
+    var nursery = document.createElement('div');
+
+    function createDom(html) {
+        nursery.innerHTML = html;
+        var elements = [];
+
+        while (nursery.children.length)
+            elements.push(nursery.removeChild(nursery.children[0]));
+
+        return elements;
     }
 })(this);

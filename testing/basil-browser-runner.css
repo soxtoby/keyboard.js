@@ -1,53 +1,141 @@
-li {
-    list-style-image: none;
-    list-style: none;
-    padding-left: 0px;
-    margin-left: 0px;
-    list-style-position: outside;
+﻿@charset "UTF-8";
+
+body {
+    margin: 0;
+    font-family: sans-serif;
+    color: hsl(0, 0%, 25%);
 }
-.has-children {
+
+#basil-header {
+    background: hsl(76, 35%, 75%);
+    color: hsl(76, 35%, 95%);
+    padding: 0.5em;
+    text-shadow: 1px 1px 6px hsl(76, 35%, 60%);
+}
+
+#basil-header.is-failed {
+    background: hsl(0, 65%, 75%);
+    color: hsl(76, 35%, 95%);
+    padding: 0.5em;
+    text-shadow: 1px 1px 6px hsl(0, 35%, 60%);
+}
+
+#basil-header input {
+    border: none;
+    background: white;
+    box-shadow: 1px 1px 6px hsl(76, 35%, 60%);
+}
+
+#basil-header.is-failed input {
+    box-shadow: 1px 1px 6px hsl(0, 35%, 60%);
+}
+
+#basil-header input[type="checkbox"] {  
+    height: 1em;  
+    width: 1em;
+    vertical-align: text-top;
+    -webkit-appearance: none;  
+}
+
+#basil-header input[type="checkbox"]:checked:before {
+    content: '✔';
+    position: relative;
+    top: -0.1em;
+    color: hsl(76, 35%, 50%);
+}
+
+#basil-header.is-failed input[type="checkbox"]:checked:before {
+    acolor: hsl(0, 35%, 50%);
+}
+
+#basil-title {
+    font-size: 2em;
+    color: white;
+}
+
+#basil-results {
+    padding: 1em 1.5em;
+}
+
+#basil-results ul {
+    padding-left: 1em;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+#basil-results li {
+    padding-left: 0;
+    margin-left: 0;
+}
+
+.is-hiding-passed .is-passed {
+    display: none;
+}
+
+/* Parents */
+.basil-parent {
+    font-weight: bold;
     list-style-image: url(data:image/gif;base64,R0lGODlhCQAJAIABAAAAAAAAACH5BAEAAAEALAAAAAAJAAkAAAINjI95wN3hnolJVoVzKAA7);
 }
-.has-children.collapsed {
+.basil-parent.is-collapsed {
     list-style-image: url(data:image/gif;base64,R0lGODlhCQAJAPcBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAEALAAAAAAJAAkAAAggAAME+CewYMF/BA0KRJjQIMOGCx86ZKiQYkWIBxUGCAgAOw==);
 }
-.basil-hide-passed .pass {
+.basil-parent.is-collapsed > ul {
     display: none;
 }
-.collapsed > ul {
-    display: none;
-}
-li.has-children:hover {
+.basil-parent:hover {
     cursor: pointer;
 }
-li.has-children ul{
+
+/* Leaves */
+.basil-leaf {
+    font-weight: normal;
     cursor: default;
+    list-style: none;
 }
 
-li.pass {
-    color: #005500;
-}
-
-li.pass:before {
+/* Test state */
+.is-passed:before {
     content: '✓ ';
+    color: hsl(76, 80%, 40%);
 }
 
-li.fail {
-    color: #880000;
-}
-
-li.fail:before {
+li.is-failed:before {
     content: '✗ ';
+    color: hsl(0, 80%, 50%);
 }
 
-li.not-run {
-    color: #555500;
-}
-
-li.not-run:before {
+.is-not-run:before {
     content: '∅ ';
 }
-a.basil-inspect {
+
+.basil-inspect {
     text-decoration: none;
     font-size: small;
+}
+
+/* Code */
+.toggle-fail-code {
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1em;
+    height: 1em;
+}
+.toggle-fail-code:before {
+    font-weight: bold;
+    content: '›';
+    width: 1em;
+    height: 0.7em;
+}
+.toggle-fail-code:checked:before {
+    content: '⌵';
+}
+.fail-code {
+    font-family: Consolas, monospace;
+    white-space: pre;
+    display: none;
+    font-size: 0.7em;
+}
+.toggle-fail-code:checked ~ .fail-code {
+    display: block;
 }
