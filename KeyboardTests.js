@@ -12,15 +12,15 @@
         when("triggering 'a'", function () {
             keyboard.trigger('a');
 
-            then(function () { a.should.be.called; });
-            then(function () { b.should.not.be.called; });
+            then(function () { a.handler.should.be.called; });
+            then(function () { b.handler.should.not.be.called; });
         });
 
         when("triggering 'b'", function () {
             keyboard.trigger('b');
 
-            then(function () { b.should.be.called; });
-            then(function () { a.should.not.be.called; });
+            then(function () { b.handler.should.be.called; });
+            then(function () { a.handler.should.not.be.called; });
         });
 
         when("then all unbound", function () {
@@ -29,7 +29,7 @@
             when("triggering 'a'", function () {
                 keyboard.trigger('a');
 
-                then(function () { a.should.not.be.called; });
+                then(function () { a.handler.should.not.be.called; });
             });
         });
     });
@@ -41,7 +41,7 @@
             keyboard.trigger('a');
             keyboard.trigger('b');
 
-            then(function () { ab.should.be.called; });
+            then(function () { ab.handler.should.be.called; });
         });
     });
 
@@ -55,8 +55,8 @@
                 keyboard.trigger('a b c');
 
                 it("calls 'a' handler then 'a b c' handler", function () {
-                    a.should.be.calledBefore(abc);
-                    abc.should.be.called;
+                    a.handler.should.be.calledBefore(abc.handler);
+                    abc.handler.should.be.called;
                 });
             });
         });
@@ -68,8 +68,8 @@
                 keyboard.trigger('a b c');
 
                 it("calls 'a b c' handler only", function () {
-                    abc.should.be.called;
-                    b.should.not.be.called;
+                    abc.handler.should.be.called;
+                    b.handler.should.not.be.called;
                 });
             });
         });
@@ -80,7 +80,7 @@
             when("triggering 'a', 'b', 'd'", function () {
                 keyboard.trigger('a b d');
 
-                then(function () { d.should.be.called; });
+                then(function () { d.handler.should.be.called; });
             });
         });
 
@@ -90,7 +90,7 @@
             when("triggering 'a', 'b', 'd'", function () {
                 keyboard.trigger('a b d');
 
-                then(function () { bd.should.be.called; });
+                then(function () { bd.handler.should.be.called; });
             });
         });
     });
@@ -101,11 +101,11 @@
         when("'a' is pressed", function () {
             var event = press('a');
 
-            then(function () { a.should.be.calledWith(event); });
+            then(function () { a.handler.should.be.calledWith(event); });
         });
 
         when("'a' handler returns false", function () {
-            a.returns(false);
+            a.handler.returns(false);
 
             when("'a' is pressed", function () {
                 var event = press('a', { stopPropagation:sinon.spy(), preventDefault:sinon.spy() });
@@ -118,7 +118,7 @@
         when("'ctrl+a' is pressed", function () {
             press('a', { ctrlKey:true });
 
-            then(function () { a.should.not.be.called; });
+            then(function () { a.handler.should.not.be.called; });
         });
     });
 
@@ -128,7 +128,7 @@
         when("'ctrl+a' is pressed", function () {
             press('a', { ctrlKey:true });
 
-            then(function () { ctrlA.should.be.called; });
+            then(function () { ctrlA.handler.should.be.called; });
         });
     });
 
@@ -138,7 +138,7 @@
         when("'ctrl' is pressed", function () {
             press(ctrlKeyCode, { ctrlKey:true });
 
-            then(function () { ctrl.should.be.called; });
+            then(function () { ctrl.handler.should.be.called; });
         });
 
         when("'ctrl+a' bound", function () {
@@ -149,8 +149,8 @@
                 press('a', { ctrlKey:true });
 
                 it("calls 'ctrl' handler then 'ctrl+a' handler", function () {
-                    ctrl.should.be.calledBefore(ctrlA);
-                    ctrlA.should.be.called;
+                    ctrl.handler.should.be.calledBefore(ctrlA);
+                    ctrlA.handler.should.be.called;
                 });
             });
         });
@@ -162,7 +162,7 @@
         when("triggered in correct order", function () {
             keyboard.trigger('ctrl+a');
 
-            then(function () { aCtrl.should.be.called; });
+            then(function () { aCtrl.handler.should.be.called; });
         });
     });
 
@@ -172,13 +172,13 @@
         when("first shortcut pressed", function() {
             press('a');
 
-            then(function() { handler.should.be.called; });
+            then(function() { handler.handler.should.be.called; });
         })
 
         when("second shortcut pressed", function() {
             press('b');
 
-            then(function() { handler.should.be.called; });
+            then(function() { handler.handler.should.be.called; });
         });
     });
 
@@ -187,7 +187,7 @@
     function bind(keys) {
         var handler = sinon.stub();
         keyboard.on(keys, handler);
-        return handler;
+        return { handler: handler };
     }
 
     function press(which, opts) {
