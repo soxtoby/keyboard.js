@@ -4,7 +4,7 @@
     var nonChars = {
         8: 'backspace',
         9: 'tab',
-        13: 'return',
+        13: 'enter',
         19: 'pause',
         20: 'capslock',
         27: 'esc',
@@ -63,6 +63,11 @@
         on: function(keys, eventHandler) {
             if (!eventHandler)
                 throw new Error('eventHandler not specified');
+
+            if (Array.isArray(keys))
+                return keys.forEach(function (key) {
+                    keyboard.on(key, eventHandler);
+                });
 
             var node = this.bindings;
             keys.split(' ').forEach(function(key) {
